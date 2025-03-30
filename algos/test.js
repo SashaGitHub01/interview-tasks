@@ -9,41 +9,37 @@
   [1,2] => "1-2"
 */
 {
-  function compress(nums) {
-    const list = [...nums].sort((a, b) => a - b);
+  function rangeToString(numbers) {
+    if (!numbers.length) return "";
 
-    let result = [];
-    let start = 0;
-    let end = start + 1;
+    const sortedNumbers = [...numbers].sort((a, b) => a - b);
 
-    while (end < list.length) {
-      if (list[end] === list[end - 1] + 1) {
-        end++;
+    const result = [];
+    let rangeStartValue = sortedNumbers[0];
+    let rangeEndValue = sortedNumbers[0]; 
+
+    for (let i = 1; i <= sortedNumbers.length; i++) {
+      if (sortedNumbers[i] === rangeEndValue + 1) {
+        rangeEndValue = sortedNumbers[i];
       } else {
-        if (end - start === 1) {
-          result.push(list[start]);
+        if (rangeStartValue === rangeEndValue) {
+          result.push(`${rangeEndValue}`);
         } else {
-          result.push(`${list[start]}-${list[end - 1]}`);
+          result.push(`${rangeStartValue}-${rangeEndValue}`);
         }
 
-        start = end;
-        end++;
+        rangeStartValue = sortedNumbers[i];
+        rangeEndValue = sortedNumbers[i];
       }
     }
 
-    if (start === end - 1) {
-      result.push(list[start]);
-    } else {
-      result.push(`${list[start]}-${list[end - 1]}`);
-    }
-
-    return result.join(",");
+    return result.join(',')
   }
 
-  // console.log(compress([1, 4, 5, 2, 3, 9, 8, 11]), "res: 0-5,8-9,11");
-  // console.log(compress([1, 4, 3, 2]), "res: 1-4");
-  // console.log(compress([1, 4]), "res: 1,4");
-  // console.log(compress([1, 2]), "res: 1-2");
+  console.log(rangeToString([1, 4, 5, 2, 3, 9, 8, 11]), "res: 0-5,8-9,11");
+  console.log(rangeToString([1, 4, 3, 2]), "res: 1-4"); // [1, 2, 3, 4]
+  console.log(rangeToString([1, 4]), "res: 1,4");
+  console.log(rangeToString([1, 2]), "res: 1-2");
 }
 
 {
@@ -51,40 +47,43 @@
     const res = [];
     let start = list[0];
     let end = list[0];
-    
+
     for (let i = 1; i < list.length; i++) {
       const current = list[i];
-      
-      if(current === end + 1) {
+
+      if (current === end + 1) {
         end = list[i];
       } else {
         if (end - start >= 2) {
-          res.push(`${start}-${end}`)
+          res.push(`${start}-${end}`);
         } else {
           for (let j = start; j <= end; j++) {
-            res.push(j)
+            res.push(j);
           }
         }
-        
-        start = list[i]
-        end = list[i]
+
+        start = list[i];
+        end = list[i];
       }
     }
-    
+
     if (end - start >= 2) {
-      res.push(`${start}-${end}`)
+      res.push(`${start}-${end}`);
     } else {
       for (let j = start; j <= end; j++) {
-            res.push(j)
+        res.push(j);
       }
     }
-    
-    return res.join(',');
-  }
-  
-  const range = [-10, -9, -8, -7, -3, -2, -1, 0, 1, 3, 4, 5, 14, 15, 17, 18, 19, 20, 566, 776];
-  console.info(getRanges(range));
-  console.info(getRanges(range) === "-10--7,-3-1,3-5,14,15,17-20,566,776");
+
+    return res.join(",");
+  };
+
+  const range = [
+    -10, -9, -8, -7, -3, -2, -1, 0, 1, 3, 4, 5, 14, 15, 17, 18, 19, 20, 566,
+    776,
+  ];
+  // console.info(getRanges(range));
+  // console.info(getRanges(range) === "-10--7,-3-1,3-5,14,15,17-20,566,776");
 }
 
 {
@@ -112,8 +111,8 @@
     return Math.max(maxLength, currentLength);
   };
 
-  console.log(getMaxSequenceLength(input1));
-  console.log(getMaxSequenceLength(input2));
+  // console.log(getMaxSequenceLength(input1));
+  // console.log(getMaxSequenceLength(input2));
 }
 
 {
@@ -148,6 +147,6 @@
     return merged;
   }
 
-  console.log(mergeTwo(arr1, arr2));
+  // console.log(mergeTwo(arr1, arr2));
   // [1, 2, 3, 5, 6, 7, 8, 10, 11, 15, 19, undefined]
 }

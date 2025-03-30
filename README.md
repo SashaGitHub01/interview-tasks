@@ -1,0 +1,1 @@
+`npm run start path/file.js`

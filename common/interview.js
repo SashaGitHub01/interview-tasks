@@ -33,11 +33,11 @@ mappy.set({add: "rer"}, 123);
 // new Promise((resolve) => {
 //   console.log("res", a);
 
-//   a += 55; // err 'a' not defined, если заменить на var ошибки не будет!
+//   a += 55; //  ReferenceError Cannot access 'a' before initialization, если заменить на var ошибки не будет!
 //   resolve(a);
 // })
 //   .then((res) => console.log("res", res))
-//   .catch((err) => console.log("err", a)); // err 6;
+//   .catch((err) => console.log("err", a, err)); // err 6;
 
 // let a = 5;
 // a++;
@@ -149,7 +149,7 @@ var obj = {
 // for (var i = 0; i < 5; i++) {
 //   let ui = i;
 //   setTimeout(() => {
-//     console.log(ui);
+//     console.log(ui, i);
 //   }, 0);
 // }
 
@@ -194,57 +194,18 @@ const flatten = (arr, deep = Infinity) => {
 
 // console.log(flatten([1, 2, 3, [4, [5, [6, [7, [[8]]]]]]], 1 ));
 
-// const findUniq = (arr) => {
-//   const map = {};
+{
+  function findUniq(arr) {
+    const counts = arr.reduce((acc, num) => {
+      acc[num] = (acc[num] || 0) + 1;
+      return acc;
+    }, {});
 
-//   for (let i = 0; i < arr.length; i++) {
-//     if (arr[i] in map) {
-//       map[arr[i]] += 1;
-//     } else {
-//       map[arr[i]] = 1;
-//     }
-//   }
-
-//   return Object.keys(map).filter((key) => map[key] === 1);
-// };
-
-const findUniq = (arr) => {
-  const map = new Map();
-
-  for (let i = 0; i < arr.length; i++) {
-    if (map.has(arr[i])) {
-      map.set(arr[i], map.get(arr[i]) + 1);
-    } else {
-      map.set(arr[i], 1);
-    }
+    return arr.filter((num) => counts[num] === 1);
   }
 
-  const res = [];
-
-  map.forEach((val, key) => {
-    if (val === 1) res.push(key);
-  });
-
-  return res;
-};
-
-// const findUniq = (arr) => {
-//   const valsMap = {};
-//   const valsHistory = {};
-
-//   for (let i = 0; i < arr.length; i++) {
-//     if (arr[i] in valsMap) {
-//       delete valsMap[arr[i]];
-//     } else if (!(arr[i] in valsHistory)) {
-//       valsMap[arr[i]] = arr[i];
-//       valsHistory[arr[i]] = arr[i];
-//     }
-//   }
-
-//   return Object.values(valsMap);
-// };
-
-// console.log(findUniq([1, 1, 1, 3, 4, 4, 2, 5, 5, 5, 8]));
+  console.log(findUniq([1, 1, 1, 3, 4, 4, 2, 5, 5, 5, 8])); // [3, 2, 8]
+}
 
 // const usePropsChanges = (props) => {
 //   const prevProps = useRef();
@@ -257,19 +218,21 @@ const findUniq = (arr) => {
 //     }
 
 //     prevProps.current = props;
-//   }, []);
+//   }, [props]);
 // };
 
 // intersection
 // [1, 4, 5, 10, 8], [1, 8, 7, 9, 5] => [1, 8, 5]
 
-function intersection(a, b) {
-  const setA = new Set(a);
+{
+  function intersection(a, b) {
+    const setA = new Set(a);
 
-  return b.filter((val) => setA.has(val));
+    return b.filter((val) => setA.has(val));
+  }
+
+  // console.log('intersection', intersection([1, 4, 5, 10, 8], [1, 8, 7, 9, 5]));
 }
-
-// console.log('intersection', intersection([1, 4, 5, 10, 8], [1, 8, 7, 9, 5]));
 
 // class C {
 //   a = 1;
@@ -357,13 +320,16 @@ Function.prototype.customApply = function (objRef, args = []) {
   return fn.call(objRef, ...args);
 };
 
-Function.prototype.customCall2 = function (objRef, ...args) {
-  const symbolId = Symbol("fn");
+Function.prototype.myCall = function (context, ...args) {
+  const ctx = context || globalThis;
+  const fnName = new Symbol("fn");
+  context[fnName] = this;
 
-  const otherObj = Object.create(objRef);
-  otherObj[symbolId] = this;
+  const res = ctx[fnName](...args);
 
-  return otherObj[symbolId](...args);
+  delete res[fnName];
+
+  return res;
 };
 
 const testobj = {
@@ -421,7 +387,7 @@ const taskList = [delay(1000), delay(2000), delay(3000)];
 
 const promiseRace = function (promisesArray) {
   return new Promise((resolve, reject) => {
-    promisesArray.forEach((promise, i) => {
+    promisesArray.forEach((promise) => {
       Promise.resolve(promise).then(resolve).catch(reject);
     });
   });
@@ -465,42 +431,27 @@ const str = "one.two.three.four.five";
 // }
 
 // 1
-// const getObject = (someStr) => {
-//   const arr = someStr.split(".");
-//   const obj = {};
-//   const key = arr[0];
-
-//   if (!someStr) return obj;
-
-//   arr.shift();
-//   obj[key] = getObject(arr.join("."));
-
-//   return obj;
-// };
-
-// 2
-// const getObject = (someStr) => {
-//   const arr = someStr.split(".");
-
-//   return arr.reduceRight((acc, key) => {
-//     return {[key]: acc};
-//   }, {});
-// };
-
-// 3
 const getObject = (someStr) => {
   const arr = someStr.split(".");
 
-  let result = {};
-  let currentObj = result;
+  return arr.reduceRight((acc, key) => {
+    return {[key]: acc};
+  }, {});
+};
 
-  arr.forEach((key) => {
-    currentObj[key] = {};
-    currentObj = currentObj[key];
+// 2
+function stringToNestedObject(str) {
+  const keys = str.split(".");
+  let result = {};
+  let current = result;
+
+  keys.forEach((key) => {
+    current[key] = {}; // Создаём пустой объект на текущем уровне
+    current = current[key]; // Переходим на следующий уровень
   });
 
   return result;
-};
+}
 
 // console.log(getObject(str));
 
@@ -538,72 +489,88 @@ const getObject = (someStr) => {
   //   resultObj === example
   // );
 
-  const isEqual = (obj1, obj2) => {
+  function isEqual(obj1, obj2) {
+    if (obj1 === obj2) return true;
+
     if (
       obj1 === null ||
       obj2 === null ||
       typeof obj1 !== "object" ||
       typeof obj2 !== "object"
     ) {
-      return obj1 === obj2;
-    }
-
-    if (Array.isArray(obj1) && Array.isArray(obj1)) {
-      if (obj1.length === obj2.length) {
-        return obj1.every((elem, i) => isEqual(elem, obj2[i]));
-      }
-    }
-
-    if (
-      !obj1 ||
-      !obj2 ||
-      Object.keys(obj1).length !== Object.keys(obj2).length
-    ) {
       return false;
     }
 
-    return Object.keys(obj1).every((key) => isEqual(obj1[key], obj2[key]));
-  };
+    const isArray1 = Array.isArray(obj1);
+    const isArray2 = Array.isArray(obj2);
 
-  // console.log(isEqual(example, resultObj));
+    if (isArray1 !== isArray2) {
+      return false;
+    }
+
+    if (isArray1) {
+      return obj1.every((el, i) => isEqual(el, obj2[i]));
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+
+    const setKeys = new Set(keys2);
+
+    for (let key of keys1) {
+      if (!setKeys.has(key) || !isEqual(obj1[key], obj2[key])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // console.log("resultObj", isEqual(example, resultObj));
 }
 
 // COMPRESS => AAAABBBACC => A4B3C2
 {
-  const compressString = (str) => {
-    const arr = str.split("");
-    let res = "";
-    let prevSym;
+  function compress(str) {
+    if (!str) return "";
+
+    let result = "";
     let count = 0;
 
-    arr.forEach((item, i, array) => {
-      if (!prevSym) {
-        prevSym = item;
-      }
-
-      if (prevSym === item) {
-        count++;
-
-        if (array[i + 1] !== item) {
-          res = count > 1 ? res + item + count : res;
-          prevSym = null;
-          count = 0;
+    for (let i = 1; i <= str.length; i++) {
+      if (str[i] === str[i - 1]) {
+        count += 1;
+      } else {
+        if (count > 1) {
+          result += str[i - 1] + count;
         }
+
+        count = 1;
       }
-    });
+    }
 
-    return res;
-  };
+    return result;
+  }
 
-  // console.log(compressString("AAAABBBACC"));
+  // Пример использования
+  // console.log(compress("AAAABBBACC")); // A4B3A1C2
 }
 
 {
   function sortOddArray(array) {
-    // фильтр нечетных чисел и их сортировка по возрастанию
-    const odd = array.filter((x) => x % 2).sort((a, b) => a - b);
-    // if x нечетная вставляем на ее место отсортированное нечетное odd.shift() else оставляем четное x на своем месте
-    return array.map((x) => (x % 2 ? odd.shift() : x));
+    const oddArray = array.filter((item) => item % 2).sort((a, b) => a - b);
+
+    return array.map((item) => {
+      if (item % 2) {
+        return oddArray.shift();
+      }
+
+      return item;
+    });
   }
 
   // console.log(sortOddArray([5, 3, 2, 8, 1, 4]));
@@ -635,22 +602,6 @@ const getObject = (someStr) => {
 }
 
 {
-  const sortOdd = (arr) => {
-    const odds = arr.filter((x) => x % 2).sort((a, b) => a - b);
-    let oddIdx = 0;
-
-    for (let i = 0; i < arr.length; i++) {
-      if (arr[i] % 2) arr[i] = odds[oddIdx++];
-    }
-
-    return arr;
-  };
-
-  // console.log(sortOdd([2, 3, 1, 7, 4, 9, 5, 8])); // [2, 1, 3, 5, 4, 7, 9, 8]
-  // console.log(sortOdd([1, 2])); // [1, 2]
-}
-
-{
   const limits = {
     5000: 5,
     2000: 3,
@@ -664,17 +615,19 @@ const getObject = (someStr) => {
   const atm = (sum, limits) => {
     let rest = sum;
 
+    // reduceRight тк ключи в объекте сортируются по возрастанию
     return Object.entries(limits).reduceRight((acc, [denomination, count]) => {
       const requiredCount = Math.floor(rest / denomination);
       const availableCount = requiredCount > count ? count : requiredCount;
+      const value = denomination * availableCount;
       acc[denomination] = availableCount;
-      rest -= denomination * availableCount;
-      limits[denomination] = limits[denomination] - availableCount;
+      rest -= value;
+      limits[denomination] -= availableCount;
       return acc;
     }, {});
   };
 
-  console.log(atm(11300, limits));
+  // console.log(atm(11300, limits));
 }
 
 class MinStack {
@@ -717,3 +670,162 @@ obj.pop();
 
 // console.clear();
 // console.log(obj.top(), obj.getMin());
+
+{
+  function isPalindrome(str) {
+    const normalizedStr = str.toLowerCase().replace(/[^a-z0-9]/g, ""); // Убираем пробелы и символы
+    return normalizedStr === normalizedStr.split("").reverse().join("");
+  }
+}
+
+// 1 -> 10
+const rand2 = Math.floor(Math.random() * 10) + 1;
+
+{
+  function getIntervals(arr) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+      return "";
+    }
+
+    const result = [];
+    // Начинаем первый интервал с первого элемента
+    let start = arr[0];
+    let prev = arr[0];
+
+    for (let i = 1; i < arr.length; i++) {
+      // Если текущий элемент на 1 больше предыдущего, значит продолжаем интервал
+      if (arr[i] === prev + 1) {
+        prev = arr[i];
+      } else {
+        // Закрываем предыдущий интервал (start -> prev)
+        if (start === prev) {
+          // Если одиночное число, просто добавляем его как строку
+          result.push(String(start));
+        } else {
+          // Если интервал больше, добавляем "start-prev"
+          result.push(`${start}-${prev}`);
+        }
+        // Начинаем новый интервал
+        start = arr[i];
+        prev = arr[i];
+      }
+    }
+
+    // Закрываем последний интервал после выхода из цикла
+    if (start === prev) {
+      result.push(String(start));
+    } else {
+      result.push(`${start}-${prev}`);
+    }
+
+    return result.join(", ");
+  }
+
+  // Пример использования
+  const arr = [1, 2, 3, 4, 7, 9, 10, 11];
+  console.log(getIntervals(arr)); // "1-4, 7, 9-11"
+}
+
+{
+  // что выведет в консоль
+  var hello = "hello";
+
+  function translate() {
+    hello = "Привет";
+    // console.log(hello, 'func'); // Привет
+    var hello;
+  }
+
+  translate();
+
+  // console.log(hello, 'global'); // hello
+
+  //2.
+  foo();
+
+  function foo() {
+    var b = 10;
+
+    function b() {
+      return 5;
+    }
+
+    console.log(b); // что будет в консоли?
+
+    function b() {
+      return 15;
+    }
+  }
+
+  // 3. Написать функцию add, которая принимает число
+  // и может вызываться бесконечное число раз,
+  // пока не будет вызвана без аргументов -
+  // тогда возвращается сумма переданых ранее чисел
+  const add = function (num) {
+    if (num === undefined) return 0;
+
+    let res = num;
+
+    const addInner = (numInner) => {
+      if (numInner === undefined) {
+        return res;
+      }
+
+      res += numInner;
+      return addInner;
+    };
+
+    return addInner;
+  };
+
+  console.log("add", add(1)(1)(10)(8)());
+}
+
+{
+  const getSum = (n) => {
+    if (n === 0) return n;
+    return n + getSum(n - 1);
+  };
+
+  console.log("getSum", getSum(5));
+}
+
+{
+  const fibonacchi = (n) => {
+    if (n < 2) {
+      return n;
+    }
+
+    return fibonacchi(n - 1) + fibonacchi(n - 2);
+  };
+
+  console.log("fibonacchi", fibonacchi(6));
+  // 0 1 1 2 3 5 8...
+}
+
+{
+  const isArraysEqual = (arr1, arr2, idx) => {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+
+    if (arr1[idx] !== arr2[idx]) {
+      return false;
+    }
+
+    if (idx === -1) {
+      return true;
+    }
+
+    return isArraysEqual(arr1, arr2, idx - 1);
+  };
+
+  console.log(
+    "isArraysEqual",
+    isArraysEqual([1, 2, 3, 4, 5], [1, 2, 3, 4, 5], 4)
+  );
+  console.log(
+    "isArraysEqual",
+    isArraysEqual([1, 2, 78, 4, 5], [1, 2, 3, 4, 5], 4)
+  );
+}

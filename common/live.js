@@ -49,7 +49,9 @@
       const target = 11 - num;
       map[target] = num;
 
-      if (map[num]) acc.push([map[num], num]);
+      if (map[num]) {
+        acc.push([map[num], num]);
+      }
 
       return acc;
     }, []);
@@ -387,15 +389,15 @@
  * @return {number[]}
  */
 var twoSum = function (nums, target) {
-    const numsMap = new Map();
+  const numsMap = new Map();
 
-    for (let i = 0; i < nums.length; i++) {
-        if (numsMap.has(target - nums[i])) {
-            return [numsMap.get(target - nums[i]), i]
-        }
-        
-        numsMap.set(target - nums[i], i);
+  for (let i = 0; i < nums.length; i++) {
+    if (numsMap.has(target - nums[i])) {
+      return [numsMap.get(target - nums[i]), i];
     }
+
+    numsMap.set(target - nums[i], i);
+  }
 };
 
 function fuzzysearch(needle, stack) {
@@ -403,7 +405,7 @@ function fuzzysearch(needle, stack) {
   let needleIndex = 0;
   // Получаем длину строки needle для последующей проверки
   let needleLength = needle.length;
-  
+
   // Проходим по каждому символу в строке stack
   for (let i = 0; i < stack.length; i++) {
     // Проверяем, совпадает ли текущий символ stack с текущим символом needle
@@ -416,7 +418,7 @@ function fuzzysearch(needle, stack) {
       }
     }
   }
-  
+
   // Если цикл завершился и мы не нашли все символы needle, возвращаем false
   return false;
 }
@@ -427,4 +429,3 @@ function fuzzysearch(needle, stack) {
 // fuzzysearch('cartwheel', 'cartwheel') // true
 // fuzzysearch('cwheeel', 'cartwheel')  // false
 // fuzzysearch('lw', 'cartwheel')       // false
-
