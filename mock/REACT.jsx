@@ -62,7 +62,6 @@ import React, {useEffect, useState} from "react";
 {
   // чему будет равен count после 1 клика
   // выведется ли в консоль Count-render после клика
-
   const Counter = () => {
     const [count, setCount] = useState(0);
 
@@ -87,6 +86,9 @@ import React, {useEffect, useState} from "react";
 
     return <div>Count component</div>;
   };
+
+  // Все три вызова используют одно и то же значение count, замкнутое в момент вызова onClick.
+  // React объединит эти обновления
 }
 
 // ========================== 4

@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useMemo} from "react";
 
 // 1. any[] повсеместно
-// 2. onClick с useCallback([]) Замыкает устаревший isVisible
+// 2. onClick с useCallback([]) Замыкает устаревший isVisible, useCb лишний
 // 3. scroll-listener — не удаляется, Потенциальная утечка памяти
 // 4. List фильтрует в useEffect - Использовать useMemo
 // 5. <input /> — неконтролируемый

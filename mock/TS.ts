@@ -9,12 +9,13 @@
 }
 
 {
-  const getLength = <T extends {length: number}>(data: T): number => {
+  const getLength = (data) => {
     return data.length;
   };
 
   getLength([1, 2, 3]);
   getLength({length: 777});
+  getLength({}); // ts error
 }
 
 {
